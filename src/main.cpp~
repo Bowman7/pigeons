@@ -1,0 +1,71 @@
+#include"../raylib/raylib.h"
+#include<iostream>
+
+#define SCREEN_WIDTH 1080
+#define SCREEN_HEIGHT 720
+
+#include"FinalLoop.hpp"
+#include<chrono>
+
+
+double hires_time_in_seconds(){
+  auto now = std::chrono::high_resolution_clock::now();
+  auto duration = now.time_since_epoch();
+  return std::chrono::duration<double>(duration).count();
+}
+
+int main(){
+  //init window stuff
+  InitWindow(SCREEN_WIDTH,SCREEN_HEIGHT,"pigeons");
+
+  SetTargetFPS(60);
+
+  FinalLoop finalLoop;
+
+  //fix timestep variables
+  const double dt = 1.0/120.0f;
+  double currentTime = hires_time_in_seconds();
+  double accumulator = 0.0f;
+
+  std::cout<<"currentTime before main loop run :"<<currentTime<<std::endl;
+
+  int loopStart = 0;
+  //main loop
+  while(!WindowShouldClose()){
+    //calculate frame time
+    double newTime = hires_time_in_seconds();
+    double frameTime = newTime - currentTime;
+    if(frameTime > 0.25){
+      frameTime = 0.25;
+    }
+    currentTime = newTime;
+    accumulator += frameTime;
+    
+    //handle inputs
+    
+    finalLoop.HandleInput();
+
+    //update physics
+    while(accumulator >= dt){
+      finalLoop.UpdatePhysics(dt);
+      accumulator -= dt;
+    }
+
+    //calculate interpolation factor
+    double alpha = accumulator/dt;
+    
+    //update
+    finalLoop.Update();
+    //draw
+    BeginDrawing();
+    ClearBackground(LIGHTGRAY);
+
+    finalLoop.Draw(alpha);
+
+    EndDrawing();
+
+  }
+  CloseWindow();
+  
+  return 0;
+}

@@ -1,0 +1,252 @@
+#include"FinalLoop.hpp"
+
+FinalLoop::FinalLoop()
+  :hero(BLUE,RIGHT),enemy(RED,LEFT)
+{
+  enemy.enemyPos();
+
+  //velcotiy cal
+  double t = 0.0f;
+  float dt = 0.01f;
+
+  float velocity = 0.0f;
+  float position = 0.0f;
+  float force = 10.0f;
+  float mass = 1.0f;
+
+  while(t<=10.0f){
+    position = position+velocity*dt;
+    velocity = velocity + (force/mass)*dt;
+    t += dt;
+
+    /* std::cout<<"t:"<<t<<" position:"<<position<<" velocity:"<<velocity<<std::endl; */
+  
+  }
+}
+
+FinalLoop::~FinalLoop(){
+
+}
+
+void FinalLoop::Init(){
+  /* std::cout<<"Final loop initialized"<<std::endl; /\*  *\/ */
+  
+}
+
+void FinalLoop::HandleInput(){
+  //read input once per frame
+  inputstate.rightPressed = IsKeyDown(KEY_RIGHT);
+  inputstate.leftPressed = IsKeyDown(KEY_LEFT);
+
+  if(IsKeyPressed(KEY_W) && !hero.rightAttacking){
+    /* std::cout<<"A pressed !!"<<std::endl; */
+    inputstate.rightPunchPressed = true; 
+  }else if(IsKeyPressed(KEY_E)){
+    inputstate.leftPunchPressed = true;
+  }else if(IsKeyPressed(KEY_SPACE) && hero.onGround){
+    inputstate.jumpPressed = true;
+  } 
+}
+
+//strret fight style physics
+void FinalLoop::UpdatePhysics(double dt){
+  //set defs
+  const float WALK_SPEED = 350.0f;
+  const float DASH_SPEED = 480.0f;
+  const float JUMP_SPEED = 900.0f;
+  const float GRAVITY = 1800.0f;
+  const float GROUND_FRICTION = 0.78f;
+  const float AIR_FRICTION = 0.99f;
+
+  //hroz movement
+  if(inputstate.rightPressed && !inputstate.leftPressed){
+    if(hero.onGround && !hero.rightAttacking && !hero.leftAttacking){
+      hero.velocity.x = WALK_SPEED;
+    }else if(!hero.onGround){
+      hero.velocity.x += 1000.0f*dt ;
+    }
+  }else if(inputstate.leftPressed && !inputstate.rightPressed){
+    if(hero.onGround && !hero.rightAttacking && !hero.leftAttacking){
+      hero.velocity.x = -WALK_SPEED;
+    }else if(!hero.onGround){
+      hero.velocity.x -= 1000.0f*dt;
+    }
+  }else{
+    //friction when no input
+    float friction = hero.onGround?GROUND_FRICTION:AIR_FRICTION;
+    hero.velocity.x *= pow(friction,dt*60.0f);
+  }
+  //jump
+  if(inputstate.jumpPressed && hero.onGround){
+    hero.velocity.y = -JUMP_SPEED;
+    inputstate.jumpPressed = false;
+  }
+
+  //attacks
+  if(inputstate.rightPunchPressed && !hero.rightAttacking
+     && !hero.leftAttacking && !inputstate.leftPunchPressed){
+    hero.attackTimer = 0.2f; //200ms
+    hero.rightAttacking = true;
+
+    Direction dir = hero.GetDirection();
+    hero.velocity.x += (dir == RIGHT?100.0f:-100.0f);
+    hero.hitbox_position.x += 100.0f;
+    
+    inputstate.rightPunchPressed = false;
+  }else if(inputstate.leftPunchPressed && !hero.rightAttacking
+	   && !hero.leftAttacking && !inputstate.rightPunchPressed){
+    hero.attackTimer = 0.2f;
+    hero.leftAttacking = true;
+
+    Direction dir = hero.GetDirection();
+    hero.velocity.x += (dir == RIGHT ? 100.0f: -100.0f);
+    hero.hitbox2_position.x += 100.0f;
+
+    inputstate.leftPunchPressed = false;
+  }
+  
+  //updaet attacktimer
+  if(hero.rightAttacking){
+    hero.attackTimer -= 0.7 * dt;
+    if(hero.attackTimer <=0){
+      hero.hitbox_position.x -= 100.0f;
+      hero.rightAttacking = false;
+    }
+  }else if(hero.leftAttacking){
+    hero.attackTimer -= 2*dt;
+    if(hero.attackTimer <=0){
+      hero.hitbox2_position.x -= 100.0f;
+      hero.leftAttacking = false;
+    }
+  }
+
+  //grav and phy
+  hero.acceleration.y = GRAVITY;
+  hero.velocity.y += hero.acceleration.y*dt;
+  
+  hero.position.x += hero.velocity.x*dt;
+  hero.hitbox_position.x += hero.velocity.x*dt;
+  hero.hitbox2_position.x += hero.velocity.x*dt;
+  
+  
+  hero.position.y += hero.velocity.y*dt;
+  hero.hitbox_position.y = hero.position.y;
+  hero.hitbox2_position.y = hero.position.y;
+
+  //speed caps
+  hero.velocity.x = std::clamp(hero.velocity.x,-400.0f,400.0f);
+  hero.velocity.y = std::clamp(hero.velocity.y,-700.0f,700.0f);
+
+  
+
+  //ground collision
+  if(hero.position.y >= 360.0f){
+    hero.position.y = 360.0f;
+    hero.hitbox_position.y = 360.0f+(hero.GetHeight()/3);
+    hero.hitbox2_position.y = 360.0f+50.0f;;
+    
+    hero.velocity.y = 0.0f;
+    hero.onGround = true;
+  }else{
+    hero.onGround = false;
+  }
+  
+}
+
+void FinalLoop::Update(){
+  /* //check collision */
+  HandleCollision();
+
+  //std::cout<<"Hits taken: "<<enemy.hitsTaken<<std::endl;
+  //std::cout<<"Hits Count: "<<enemy.hitCount<<std::endl;
+  //handle hits logic
+  if( enemy.hitsTaken >= 10){
+    if(enemy.hitCount<3){
+      enemy.hitCount +=1;
+      enemy.hitsTaken = 0;
+    }else{
+      enemy.stunned = true;
+      enemy.hitsTaken = 0;
+      enemy.hitCount = 0;
+    }
+  }
+  
+}
+
+void FinalLoop::Draw(double alpha){
+  //render player pos
+  Vector2 renderHeroPos = {
+    (float)(hero.position.x * alpha + hero.position.x * (1-alpha)),
+    (float)(hero.position.y * alpha + hero.position.y * (1-alpha))
+  };
+  Vector2 renderHeroSize = {
+    100.0f,200.0f
+  };
+
+  //render hitbox1
+  Vector2 renderHitboxPos = {
+    (float)(hero.hitbox_position.x * alpha + hero.hitbox_position.x * (1-alpha)),
+    (float)(hero.hitbox_position.y * alpha + hero.hitbox_position.y * (1-alpha))
+  };
+
+  //render hitbox2
+  Vector2 renderHitbox2Pos = {
+    (float)(hero.hitbox2_position.x * alpha + hero.hitbox2_position.x * (1-alpha)),
+    (float)(hero.hitbox2_position.y * alpha + hero.hitbox2_position.y * (1-alpha))
+  };
+  Vector2 renderHitboxSize = {
+    hero.hitbox_size.x,hero.hitbox_size.y
+  };
+   
+  //ground line
+  DrawLine(0,560,1080,560,BLACK);
+
+  DrawRectangleV(renderHitbox2Pos,renderHitboxSize,GREEN);
+  DrawRectangleV(renderHeroPos,renderHeroSize,BLUE);
+  DrawRectangleV(renderHitboxPos,renderHitboxSize,hero.h_color);
+
+  //render enemy pos
+  DrawRectangleV(enemy.position,renderHeroSize,enemy.GetColor());
+}
+
+void FinalLoop::HandleCollision(){
+  //std::cout<<"inside handle collision"<<std::endl;
+  //hero to enemy
+  //std::cout<<"\n"<<std::endl;
+  if((hero.GetHitRX()+hero.GetSizeX() > enemy.GetX() &&
+      hero.GetHitRX()+hero.GetSizeX()< enemy.GetX()+enemy.GetSizeX())
+     || (hero.GetHitRX()<enemy.GetX()+enemy.GetSizeX() &&
+	 hero.GetHitRX()+hero.GetSizeX()>enemy.GetX()+enemy.GetSizeX())
+
+     ||
+     
+     (hero.GetHitLX()+hero.GetSizeX() > enemy.GetX() &&
+      hero.GetHitLX()+hero.GetSizeX()< enemy.GetX()+enemy.GetSizeX())
+     || (hero.GetHitLX()<enemy.GetX()+enemy.GetSizeX() &&
+	 hero.GetHitLX()+hero.GetSizeX()>enemy.GetX()+enemy.GetSizeX())
+     
+     ){
+
+    std::cout<<"HIT"<<std::endl;
+    
+    enemy.SetColor(YELLOW);
+    enemy.hitsTaken += 1;
+
+    
+    switch(hero.GetDirection()){
+    case LEFT:
+      break;
+    case RIGHT:
+      if(enemy.stunned){
+	enemy.SetX(50);
+	enemy.stunned = false;
+      }
+      break;
+    default:
+      break;
+    }
+  }else{
+    enemy.SetColor(RED);
+  }
+  //std::cout<<"\n"<<std::endl;
+}

@@ -1,0 +1,5 @@
+so naming convetions:
+
+class objects: name_name
+variables: nameName
+function: NameName()

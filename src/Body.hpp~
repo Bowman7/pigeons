@@ -1,0 +1,155 @@
+#ifndef BODY_HPP
+#define BODY_HPP
+
+#include"../raylib/raylib.h"
+
+
+typedef enum{
+    LEFT,
+    RIGHT,
+}Direction;
+
+class Body{
+public:
+  Body(Color color,Direction direction){
+    this->posX = 360;
+    this->posY = 360;
+    this->width = 100;
+    this->height = 200;
+    this->color = color;
+    this->direction = direction;
+
+    this->h_posX = posX+(width/2);
+    this->h_posY = posY+(height/3);
+    
+    //for hitbox
+    this->hitbox_position.x = (width/2);
+    this->hitbox_position.y = (height/3);
+
+    this->hitbox2_position.x = 90.0f;
+    this->hitbox2_position.y = 100.0f;
+    
+    this->h_color = ORANGE;
+    
+  }
+  float GetX(){
+    return position.x;;
+  }
+  float GetY(){
+    return position.y;
+  }
+  //for hitbox 1
+  float GetHitRX(){
+    return hitbox_position.x;
+  }
+  
+  float GetHitRY(){
+    return hitbox_position.y;
+  }
+  //for hitbox2
+  float GetHitLX(){
+    return hitbox2_position.x;
+  }
+  
+  float GetHitLY(){
+    return hitbox2_position.y;
+  }
+
+  float GetSizeX(){
+    return hitbox_size.x;
+  }
+  
+  float GetSizeY(){
+    return hitbox_size.y;
+  }
+  
+  int GetWidth(){
+    return width;
+  }
+  int GetHeight(){
+    return height;
+  }
+  Direction GetDirection(){
+    return direction;
+  }
+  void SetX(int x){
+    this->posX += x;
+    this->h_posX += x;
+
+    position.x += (float)x;
+
+  }
+
+  Color GetColor(){
+    return color;
+  }
+  void SetY(int y){
+    this->posY += y;
+    this->posY += y;
+  }
+
+  void enemyPos(){
+    position.x = 300.0f;
+    position.y = 360.0f;
+  }
+  
+  void SetColor(Color color){
+    this->color = color;
+  }
+  void SetDirection(Direction dir){
+    this->direction = dir;
+  }
+  
+  void Draw(){
+    DrawRectangle(posX,posY,width,height,color);
+    DrawRectangle(h_posX,h_posY,h_width,h_height,h_color);
+  }
+  //punch
+  void Punch(){
+    
+    this->h_posX += 80;
+  }
+private:
+  int posX,posY;
+  int width,height;
+
+  //hitbox 
+  int h_posX,h_posY;
+  int h_width,h_height;
+  
+  Direction h_direction;  
+  Color color;
+  Direction direction;
+public:
+  Vector2 position = {0.0f,0.0f};
+  Vector2 velocity = {0.0f,0.0f};
+  Vector2 acceleration = {10.0f,0.0f};
+  bool onGround = false;
+  
+  bool rightAttacking = false;
+  bool leftAttacking = false;
+  
+  float attackTimer = 0.0f;
+
+  //hitbox1 stuff
+  Vector2 hitbox_position = {0.0f,0.0f};
+  Vector2 hitbox_size = {50.0f,50.0f};
+  Vector2 hit_velocity = {0.0f,0.0f};
+  Color h_color;
+
+  //hitbox2 stuff
+  Vector2 hitbox2_position = {0.0f,0.0f};
+  Vector2 hitbox2_size = {50.0f,50.0f};
+  Vector2 hit2_velocity = {0.0f,0.0f};
+  Color h2_color;
+
+  //hurtbox stuff
+  
+  int hitsTaken =0;
+  int hitCount = 0;
+  bool stunned = false;
+
+  
+};
+
+#endif

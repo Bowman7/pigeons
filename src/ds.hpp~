@@ -1,0 +1,12 @@
+#ifndef DS_HPP
+#define DS_HPP
+
+//c stype stack
+class Stack{
+public:
+  int size = 10;
+  int *stack = (int*)malloc(10*size(int*))
+}
+
+
+#endif
