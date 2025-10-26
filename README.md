@@ -1,5 +1,5 @@
 # Pigeons
-Just a simple combat with a potential sotryline but currently just working on the combat and little bit of graphics as well.
+Just a simple combat with a potential storyline but currently just working on the combat and little bit of graphics as well.
 
 
 current progress:
