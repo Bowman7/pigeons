@@ -1,7 +1,7 @@
 #include"FinalLoop.hpp"
 
 FinalLoop::FinalLoop()
-  :hero(BLUE,RIGHT),enemy(RED,LEFT)
+  :hero(BLUE,RIGHT),enemy(WHITE,LEFT)
 {
   enemy.enemyPos();
 }
@@ -11,7 +11,15 @@ FinalLoop::~FinalLoop(){
 }
 
 void FinalLoop::Init(){
- 
+  const char* heroImgSrc= "asset/mc.png";
+  const char* enemyImgSrc = "asset/dummy.png";
+
+  hero.Init(heroImgSrc);
+  enemy.Init(enemyImgSrc);
+}
+
+void FinalLoop::deInit(){
+  hero.deInit();
 }
 
 void FinalLoop::HandleInput(){
@@ -23,7 +31,7 @@ void FinalLoop::HandleInput(){
     inputstate.rightPunchPressed = true; 
   }else if(IsKeyPressed(KEY_E) && !hero.IsLeftAttacking()){
     inputstate.leftPunchPressed = true;
-  }else if(IsKeyPressed(KEY_SPACE) && hero.IsOnGround()){
+  }else if(IsKeyPressed(KEY_SPACE) && hero.onGround && !inputstate.jumpPressed){
     inputstate.jumpPressed = true;
   }
   
@@ -40,24 +48,24 @@ void FinalLoop::UpdatePhysics(double dt){
 
   //horz movement
   if(inputstate.rightPressed && !inputstate.leftPressed){
-    if(hero.IsOnGround() && !hero.IsRightAttacking() && !hero.IsLeftAttacking()){
+    if(hero.onGround && !hero.IsRightAttacking() && !hero.IsLeftAttacking()){
       hero.velocity.x = WALK_SPEED;
-    }else if(!hero.IsOnGround()){
+    }else if(!hero.onGround){
       hero.velocity.x += 1000.0f*dt ;
     }
   }else if(inputstate.leftPressed && !inputstate.rightPressed){
-    if(hero.IsOnGround() && !hero.IsRightAttacking() && !hero.IsLeftAttacking()){
+    if(hero.onGround && !hero.IsRightAttacking() && !hero.IsLeftAttacking()){
       hero.velocity.x = -WALK_SPEED;
-    }else if(!hero.IsOnGround()){
+    }else if(!hero.onGround){
       hero.velocity.x -= 1000.0f*dt;
     }
   }else{
     //friction when no input
-    float friction = hero.IsOnGround()?GROUND_FRICTION:AIR_FRICTION;
+    float friction = hero.onGround?GROUND_FRICTION:AIR_FRICTION;
     hero.velocity.x *= pow(friction,dt*60.0f);
   }
   //jump
-  if(inputstate.jumpPressed && hero.IsOnGround()){
+  if(inputstate.jumpPressed && hero.onGround){
     hero.velocity.y = -JUMP_SPEED;
     inputstate.jumpPressed = false;
   }
@@ -70,7 +78,7 @@ void FinalLoop::UpdatePhysics(double dt){
 
     Direction dir = hero.GetDirection();
     hero.velocity.x += (dir == RIGHT?100.0f:-100.0f);
-    hero.hitbox1_position.x += 100.0f;
+    hero.hitbox1_position.x += 95.0f;
     
     inputstate.rightPunchPressed = false;
     
@@ -81,7 +89,7 @@ void FinalLoop::UpdatePhysics(double dt){
 
     Direction dir = hero.GetDirection();
     hero.velocity.x += (dir == RIGHT ? 100.0f: -100.0f);
-    hero.hitbox2_position.x += 100.0f;
+    hero.hitbox2_position.x += 40.0f;
 
     inputstate.leftPunchPressed = false;
   }
@@ -90,13 +98,13 @@ void FinalLoop::UpdatePhysics(double dt){
   if(hero.IsRightAttacking()){
     hero.attackTimer -= 0.7 * dt;
     if(hero.attackTimer <=0){
-      hero.hitbox1_position.x -= 100.0f;
+      hero.hitbox1_position.x -= 95.0f;
       hero.SetRightAttacking();
     }
   }else if(hero.IsLeftAttacking()){
     hero.attackTimer -= 2*dt;
     if(hero.attackTimer <=0){
-      hero.hitbox2_position.x -= 100.0f;
+      hero.hitbox2_position.x -= 40.0f;
       hero.SetLeftAttacking();
     }
   }
@@ -127,9 +135,9 @@ void FinalLoop::UpdatePhysics(double dt){
     hero.hitbox2_position.y = 360.0f+50.0f;;
     
     hero.velocity.y = 0.0f;
-    hero.SetOnGround();
+    hero.onGround = true;
   }else{
-    hero.SetOnGround();
+    hero.onGround = false;
   }
   
 }
@@ -175,19 +183,20 @@ void FinalLoop::Draw(double alpha){
   DrawLine(0,560,1080,560,BLACK);
 
   DrawRectangleV(renderHitbox2Pos,hero.GetHitboxSize(),hero.GetH1Color());
-  DrawRectangleV(renderHeroPos,hero.GetSize(),hero.GetColor());
+  //DrawRectangleV(renderHeroPos,hero.GetSize(),hero.GetColor());
+  DrawTextureV(hero.bodyTexture,renderHeroPos,WHITE);
   DrawRectangleV(renderHitboxPos,hero.GetHitboxSize(),hero.GetH2Color());
 
   //render enemy pos
-  DrawRectangleV(enemy.position,enemy.GetSize(),enemy.GetColor());
+  DrawTextureV(enemy.bodyTexture,enemy.position,enemy.GetColor());
 }
 
 void FinalLoop::HandleCollision(){
   if((hero.GetHitRX()<enemy.GetX()+enemy.GetWidth() &&
-      hero.GetHitRX()+hero.GetHSizeX()>enemy.GetX())
+      hero.GetHitRX()+hero.GetHSizeX()>enemy.GetX()+40.0f)
      ||
      (hero.GetHitLX()<enemy.GetX()+enemy.GetWidth() &&
-      hero.GetHitLX()+hero.GetHSizeX()>enemy.GetX())
+      hero.GetHitLX()+hero.GetHSizeX()>enemy.GetX()+40.0f)
   
      ){
     
@@ -208,6 +217,6 @@ void FinalLoop::HandleCollision(){
       break;
     }
   }else{
-    enemy.SetColor(RED);
+    enemy.SetColor(WHITE);
   }
 }

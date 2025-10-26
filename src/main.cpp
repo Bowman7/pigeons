@@ -22,6 +22,9 @@ int main(){
 
   FinalLoop finalLoop;
 
+  //init load textures
+  finalLoop.Init();
+
   //fix timestep variables
   const double dt = 1.0/120.0f;
   double currentTime = hires_time_in_seconds();
@@ -61,6 +64,8 @@ int main(){
     EndDrawing();
 
   }
+  //de intialize
+  finalLoop.deInit();
   CloseWindow();
   
   return 0;
