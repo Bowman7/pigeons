@@ -17,10 +17,10 @@ public:
     this->direction = direction;
     
     //for hitbox
-    this->hitbox1_position.x = (bodySize.x/2);
+    this->hitbox1_position.x = 50.0f;
     this->hitbox1_position.y = (bodySize.y/3);
 
-    this->hitbox2_position.x = 90.0f;
+    this->hitbox2_position.x = 110.0f;
     this->hitbox2_position.y = 100.0f;
     
     this->h1_color = GREEN;
@@ -117,22 +117,36 @@ public:
     return onGround;
   }
   void SetOnGround(){
-    onGround = !onGround;
+    if(onGround){
+      onGround = false;
+    }else{
+      onGround = true;    }
   }
 
   Vector2 GetHitboxSize(){
     return hitbox_size;
   }
+
+  void Init(const char* imageSrc){
+    bodyImage  = LoadImage(imageSrc);
+    ImageResizeNN(&bodyImage,200,200);
+    bodyTexture =  LoadTextureFromImage(bodyImage);
+  }
+
+  void deInit(){
+    UnloadTexture(bodyTexture);
+  }
 private:
   
   Color color;
   Direction direction;
-  bool onGround = false; 
   bool rightAttacking = false;
   bool leftAttacking = false;
   Vector2 bodySize = {100.0f,200.0f};
   
 public:
+  bool onGround = false;
+  
   Vector2 position = {0.0f,0.0f};
   Vector2 velocity = {0.0f,0.0f};
   Vector2 acceleration = {10.0f,0.0f};
@@ -157,6 +171,10 @@ public:
   int hitsTaken =0;
   int hitCount = 0;
   bool stunned = false;
+
+  //texture
+  Image bodyImage;
+  Texture2D bodyTexture;
 
   
 };

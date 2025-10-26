@@ -8,18 +8,18 @@
 #include"stdio.h"
 
 #include"Body.hpp"
-#include"ds.hpp"
 
 class FinalLoop{
 public:
   FinalLoop();
   ~FinalLoop();
   void Init();
+  void deInit();
   void HandleInput();
   void UpdatePhysics(double);
   void Update();
   void Draw(double);
-
+  
   void HandleCollision();
 
 private:
