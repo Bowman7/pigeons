@@ -11,11 +11,11 @@ FinalLoop::~FinalLoop(){
 }
 
 void FinalLoop::Init(){
-  const char* heroImgSrc= "asset/mc.png";
+  const char* heroImgSrc= "asset/hero-shee.png";
   const char* enemyImgSrc = "asset/dummy.png";
 
-  hero.Init(heroImgSrc);
-  enemy.Init(enemyImgSrc);
+  hero.Init(heroImgSrc,1);
+  enemy.Init(enemyImgSrc,2);
 }
 
 void FinalLoop::deInit(){
@@ -157,6 +157,19 @@ void FinalLoop::Update(){
       enemy.hitCount = 0;
     }
   }
+
+  //idle
+  hero.frameCounter++;
+  if(hero.frameCounter >= (60/hero.frameSpeed)){
+    hero.frameCounter = 0;
+    hero.currentFrame++;
+
+    if(hero.currentFrame > 7){
+      hero.currentFrame = 0;
+    }
+
+    hero.frameRec.x = (float)hero.currentFrame*(float)hero.textureWidth/8;
+  }
   
 }
 
@@ -184,7 +197,8 @@ void FinalLoop::Draw(double alpha){
 
   DrawRectangleV(renderHitbox2Pos,hero.GetHitboxSize(),hero.GetH1Color());
   //DrawRectangleV(renderHeroPos,hero.GetSize(),hero.GetColor());
-  DrawTextureV(hero.bodyTexture,renderHeroPos,WHITE);
+  //DrawTextureV(hero.bodyTexture,renderHeroPos,WHITE);
+  DrawTextureRec(hero.bodyTexture,hero.frameRec,renderHeroPos,WHITE);
   DrawRectangleV(renderHitboxPos,hero.GetHitboxSize(),hero.GetH2Color());
 
   //render enemy pos

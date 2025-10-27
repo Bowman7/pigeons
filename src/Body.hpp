@@ -9,12 +9,22 @@ typedef enum{
     RIGHT,
 }Direction;
 
+typedef enum{
+  IDLE,
+  JAB,
+  CROSS,
+  WALK
+}State;
+
 class Body{
 public:
   Body(Color color,Direction direction){
     
     this->color = color;
     this->direction = direction;
+    //current state
+    this->currentState = IDLE;
+    
     
     //for hitbox
     this->hitbox1_position.x = 50.0f;
@@ -127,10 +137,21 @@ public:
     return hitbox_size;
   }
 
-  void Init(const char* imageSrc){
+  void Init(const char* imageSrc,int id){
     bodyImage  = LoadImage(imageSrc);
-    ImageResizeNN(&bodyImage,200,200);
-    bodyTexture =  LoadTextureFromImage(bodyImage);
+    if(id == 1){//hero
+      ImageResizeNN(&bodyImage,1600,2000);
+      bodyTexture =  LoadTextureFromImage(bodyImage);
+
+      textureWidth = bodyTexture.width;
+      textureHeight = bodyTexture.height;
+    
+      frameRec = {0.0f,0.0f,textureWidth/8,textureHeight/8};
+    }else{
+      ImageResizeNN(&bodyImage,200,200);
+      bodyTexture = LoadTextureFromImage(bodyImage);
+    }
+    
   }
 
   void deInit(){
@@ -175,6 +196,15 @@ public:
   //texture
   Image bodyImage;
   Texture2D bodyTexture;
+  Rectangle frameRec;
+  float textureWidth;
+  float textureHeight;
+
+  //current state
+  State currentState;
+  int frameCounter = 0;
+  int currentFrame = 0;
+  int frameSpeed = 8;
 
   
 };
