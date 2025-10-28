@@ -13,7 +13,8 @@ typedef enum{
   IDLE,
   JAB,
   CROSS,
-  WALK
+  WALK_RIGHT,
+  WALK_LEFT,
 }State;
 
 class Body{
@@ -146,7 +147,7 @@ public:
       textureWidth = bodyTexture.width;
       textureHeight = bodyTexture.height;
     
-      frameRec = {0.0f,0.0f,textureWidth/8,textureHeight/8};
+      frameRec = {0.0f,0.0f,textureWidth/8,textureHeight/10};
     }else{
       ImageResizeNN(&bodyImage,200,200);
       bodyTexture = LoadTextureFromImage(bodyImage);
@@ -204,8 +205,9 @@ public:
   State currentState;
   int frameCounter = 0;
   int currentFrame = 0;
-  int frameSpeed = 8;
-
+  
+  int idleFrameSpeed = 8;
+  int walkRightFrameSpeed = 10;
   
 };
 

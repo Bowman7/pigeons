@@ -53,6 +53,8 @@ void FinalLoop::UpdatePhysics(double dt){
     }else if(!hero.onGround){
       hero.velocity.x += 1000.0f*dt ;
     }
+    //change state
+    hero.currentState = WALK_RIGHT;
   }else if(inputstate.leftPressed && !inputstate.rightPressed){
     if(hero.onGround && !hero.IsRightAttacking() && !hero.IsLeftAttacking()){
       hero.velocity.x = -WALK_SPEED;
@@ -63,6 +65,8 @@ void FinalLoop::UpdatePhysics(double dt){
     //friction when no input
     float friction = hero.onGround?GROUND_FRICTION:AIR_FRICTION;
     hero.velocity.x *= pow(friction,dt*60.0f);
+    //change hero state back to idle
+    hero.currentState = IDLE;
   }
   //jump
   if(inputstate.jumpPressed && hero.onGround){
@@ -160,7 +164,17 @@ void FinalLoop::Update(){
 
   //idle
   hero.frameCounter++;
-  if(hero.frameCounter >= (60/hero.frameSpeed)){
+  int frameSpeed = 0;
+  switch(hero.currentState){
+  case IDLE:
+    frameSpeed = hero.idleFrameSpeed;break;
+  case WALK_RIGHT:
+    frameSpeed = hero.walkRightFrameSpeed;break;
+  default:
+    frameSpeed = hero.idleFrameSpeed;break;
+  }
+  
+  if(hero.frameCounter >= (60/frameSpeed)){
     hero.frameCounter = 0;
     hero.currentFrame++;
 
@@ -168,6 +182,15 @@ void FinalLoop::Update(){
       hero.currentFrame = 0;
     }
 
+    //switch frame rec acc to state
+    switch(hero.currentState){
+    case IDLE:
+      hero.frameRec.y = 0.0f;break;
+    case WALK_RIGHT:
+      hero.frameRec.y = hero.textureHeight/10;break;
+    default:
+      hero.frameRec.y = 0.0f;break;
+    }
     hero.frameRec.x = (float)hero.currentFrame*(float)hero.textureWidth/8;
   }
   
