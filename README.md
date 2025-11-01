@@ -3,4 +3,5 @@ Just a simple combat with a potential storyline but currently just working on th
 
 
 current progress:
-<img width="1082" height="752" alt="image" src="https://github.com/user-attachments/assets/8efc3636-339d-4a9a-a364-e71151f7a3fb" />
+<img width="1079" height="759" alt="image" src="https://github.com/user-attachments/assets/d5ae27c6-d14e-44e7-b867-2a224cb52dc2" />
+
