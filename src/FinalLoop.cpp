@@ -61,6 +61,8 @@ void FinalLoop::UpdatePhysics(double dt){
     }else if(!hero.onGround){
       hero.velocity.x -= 1000.0f*dt;
     }
+    //change state
+    hero.currentState = WALK_LEFT;
   }else{
     //friction when no input
     float friction = hero.onGround?GROUND_FRICTION:AIR_FRICTION;
@@ -97,16 +99,24 @@ void FinalLoop::UpdatePhysics(double dt){
 
     inputstate.leftPunchPressed = false;
   }
+
+  //set state of jab and cross
+  if(hero.IsLeftAttacking()){
+    hero.currentState = JAB;
+  }
+  if(hero.IsRightAttacking()){
+    hero.currentState = CROSS;
+  }
   
   //update attacktimer
   if(hero.IsRightAttacking()){
-    hero.attackTimer -= 0.7 * dt;
+    hero.attackTimer -= 1.0 * dt;
     if(hero.attackTimer <=0){
       hero.hitbox1_position.x -= 95.0f;
       hero.SetRightAttacking();
     }
   }else if(hero.IsLeftAttacking()){
-    hero.attackTimer -= 2*dt;
+    hero.attackTimer -= 1.0*dt;
     if(hero.attackTimer <=0){
       hero.hitbox2_position.x -= 40.0f;
       hero.SetLeftAttacking();
@@ -170,15 +180,29 @@ void FinalLoop::Update(){
     frameSpeed = hero.idleFrameSpeed;break;
   case WALK_RIGHT:
     frameSpeed = hero.walkRightFrameSpeed;break;
+  case WALK_LEFT:
+    frameSpeed = hero.walkLeftFrameSpeed;break;
+  case JAB:
+    frameSpeed = hero.jabFrameSpeed;break;
+  case CROSS:
+    frameSpeed = hero.crossFrameSpeed;break;
   default:
     frameSpeed = hero.idleFrameSpeed;break;
   }
-  
+
+  //max frame count
+  int maxFrame = 0;
+  switch(hero.currentState){
+  case JAB:
+    maxFrame = hero.jabMaxFrame;break;
+  default:
+    maxFrame = hero.defaultMaxFrame;break;
+  }
   if(hero.frameCounter >= (60/frameSpeed)){
     hero.frameCounter = 0;
     hero.currentFrame++;
 
-    if(hero.currentFrame > 7){
+    if(hero.currentFrame > maxFrame){
       hero.currentFrame = 0;
     }
 
@@ -188,6 +212,12 @@ void FinalLoop::Update(){
       hero.frameRec.y = 0.0f;break;
     case WALK_RIGHT:
       hero.frameRec.y = hero.textureHeight/10;break;
+    case WALK_LEFT:
+      hero.frameRec.y = (hero.textureHeight/10)*2;break;
+    case JAB:
+      hero.frameRec.y = (hero.textureHeight/10)*3;break;
+    case CROSS:
+      hero.frameRec.y = (hero.textureHeight/10)*4;break;
     default:
       hero.frameRec.y = 0.0f;break;
     }
@@ -218,11 +248,11 @@ void FinalLoop::Draw(double alpha){
   //ground line
   DrawLine(0,560,1080,560,BLACK);
 
-  DrawRectangleV(renderHitbox2Pos,hero.GetHitboxSize(),hero.GetH1Color());
+  //DrawRectangleV(renderHitbox2Pos,hero.GetHitboxSize(),hero.GetH1Color());
   //DrawRectangleV(renderHeroPos,hero.GetSize(),hero.GetColor());
   //DrawTextureV(hero.bodyTexture,renderHeroPos,WHITE);
   DrawTextureRec(hero.bodyTexture,hero.frameRec,renderHeroPos,WHITE);
-  DrawRectangleV(renderHitboxPos,hero.GetHitboxSize(),hero.GetH2Color());
+  //DrawRectangleV(renderHitboxPos,hero.GetHitboxSize(),hero.GetH2Color());
 
   //render enemy pos
   DrawTextureV(enemy.bodyTexture,enemy.position,enemy.GetColor());

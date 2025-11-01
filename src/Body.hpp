@@ -208,6 +208,13 @@ public:
   
   int idleFrameSpeed = 8;
   int walkRightFrameSpeed = 10;
+  int walkLeftFrameSpeed = 12;
+  int jabFrameSpeed = 14;
+  int crossFrameSpeed = 14;
+  //default max frame
+  int defaultMaxFrame = 7;
+  int jabMaxFrame = 7;
+  int crossMaxFrame = 7;
   
 };
 
