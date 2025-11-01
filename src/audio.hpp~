@@ -1,0 +1,29 @@
+#ifndef AUDIO_HPP
+#define AUDIO_HPP
+
+
+#include"../raylib/raylib.h"
+
+class AudioMix{
+public:
+  void Init(){
+    
+    InitAudioDevice();
+
+    backgroundMusic = LoadMusicStream("asset/background-music.mp3");
+    backgroundMusic.looping = true;
+
+    PlayMusicStream(backgroundMusic);
+  }
+
+  void Update(){
+    UpdateMusicStream(backgroundMusic);
+  }
+
+private:
+  Music backgroundMusic;
+  Sound jab;
+  Sound Cross;
+};
+
+#endif

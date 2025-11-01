@@ -1,8 +1,9 @@
 #include"FinalLoop.hpp"
 
-FinalLoop::FinalLoop()
-  :hero(BLUE,RIGHT),enemy(WHITE,LEFT)
+FinalLoop::FinalLoop(AudioMix* audioMix)
+  :hero(WHITE,RIGHT),enemy(WHITE,LEFT)
 {
+  audioFMix = audioMix;
   enemy.enemyPos();
 }
 
@@ -11,8 +12,17 @@ FinalLoop::~FinalLoop(){
 }
 
 void FinalLoop::Init(){
+  //load background
+  backgroundImage = LoadImage("asset/bakground2-animapng.png");
+  backgroundTexture = LoadTextureFromImage(backgroundImage);
+
+  textureWidth = backgroundTexture.width;
+  textureHeight = backgroundTexture.height;
+
+  frameRec = {0.0f,0.0f,textureWidth,textureHeight/19};
+  
   const char* heroImgSrc= "asset/hero-shee.png";
-  const char* enemyImgSrc = "asset/dummy.png";
+  const char* enemyImgSrc = "asset/dummy-shee.png";
 
   hero.Init(heroImgSrc,1);
   enemy.Init(enemyImgSrc,2);
@@ -28,17 +38,24 @@ void FinalLoop::HandleInput(){
   inputstate.leftPressed = IsKeyDown(KEY_LEFT);
 
   if(IsKeyPressed(KEY_W) && !hero.IsRightAttacking()){
-    inputstate.rightPunchPressed = true; 
+    inputstate.rightPunchPressed = true;
+    audioFMix->PlayHitAir();
   }else if(IsKeyPressed(KEY_E) && !hero.IsLeftAttacking()){
     inputstate.leftPunchPressed = true;
+    audioFMix->PlayHitAir();
   }else if(IsKeyPressed(KEY_SPACE) && hero.onGround && !inputstate.jumpPressed){
     inputstate.jumpPressed = true;
+  }else if(IsKeyPressed(KEY_P)){
+    enemy.enemyPos();
   }
   
 }
 
 //street fight style physics
 void FinalLoop::UpdatePhysics(double dt){
+  //for enemy  state
+  enemy.currentState = IDLE;
+  
   //set defs
   const float WALK_SPEED = 350.0f;
   const float JUMP_SPEED = 900.0f;
@@ -157,7 +174,10 @@ void FinalLoop::UpdatePhysics(double dt){
 }
 
 void FinalLoop::Update(){
+
   
+  
+  //hmain collision
   HandleCollision();
 
   //handle hits logic
@@ -171,6 +191,43 @@ void FinalLoop::Update(){
       enemy.hitCount = 0;
     }
   }
+
+  //background update
+  frameCounter++;
+  if(frameCounter >= (60/10)){
+    frameCounter = 0;
+    currentFrame++;
+
+    if(currentFrame>18){
+      currentFrame = 0;
+    }
+    frameRec.y = (float)currentFrame*(float)textureHeight/19;
+  }
+  
+  //enemy update
+  enemy.frameCounter++;
+
+  if(enemy.frameCounter >= (60/6)){
+    enemy.frameCounter = 0;
+    enemy.currentFrame++;
+
+    if(enemy.currentFrame > 2){
+      enemy.currentFrame = 0;
+    }
+
+    switch(enemy.currentState){
+    case HIT:
+      enemy.frameRec.y = enemy.textureHeight/3;break;
+    case STUN:
+      enemy.frameRec.y = (enemy.textureHeight/3)*2;break;
+    default:
+      enemy.frameRec.y = 0.0f;break;
+    }
+    enemy.frameRec.x = (float)enemy.currentFrame*(float)enemy.textureWidth/3;
+  }
+
+  
+  
 
   //idle
   hero.frameCounter++;
@@ -198,6 +255,7 @@ void FinalLoop::Update(){
   default:
     maxFrame = hero.defaultMaxFrame;break;
   }
+  
   if(hero.frameCounter >= (60/frameSpeed)){
     hero.frameCounter = 0;
     hero.currentFrame++;
@@ -227,6 +285,9 @@ void FinalLoop::Update(){
 }
 
 void FinalLoop::Draw(double alpha){
+  //draw background
+  //DrawTextureV(backgroundTexture,{0.0f,0.0f},WHITE);
+  DrawTextureRec(backgroundTexture,frameRec,{0.0f,0.0f},WHITE);
   //render player pos
   Vector2 renderHeroPos = {
     (float)(hero.position.x * alpha + hero.position.x * (1-alpha)),
@@ -234,16 +295,16 @@ void FinalLoop::Draw(double alpha){
   };
 
   //render hitbox1
-  Vector2 renderHitboxPos = {
-    (float)(hero.hitbox1_position.x * alpha + hero.hitbox1_position.x * (1-alpha)),
-    (float)(hero.hitbox1_position.y * alpha + hero.hitbox1_position.y * (1-alpha))
-  };
+  /* Vector2 renderHitboxPos = { */
+  /*   (float)(hero.hitbox1_position.x * alpha + hero.hitbox1_position.x * (1-alpha)), */
+  /*   (float)(hero.hitbox1_position.y * alpha + hero.hitbox1_position.y * (1-alpha)) */
+  /* }; */
 
   //render hitbox2
-  Vector2 renderHitbox2Pos = {
-    (float)(hero.hitbox2_position.x * alpha + hero.hitbox2_position.x * (1-alpha)),
-    (float)(hero.hitbox2_position.y * alpha + hero.hitbox2_position.y * (1-alpha))
-  };
+  /* Vector2 renderHitbox2Pos = { */
+  /*   (float)(hero.hitbox2_position.x * alpha + hero.hitbox2_position.x * (1-alpha)), */
+  /*   (float)(hero.hitbox2_position.y * alpha + hero.hitbox2_position.y * (1-alpha)) */
+  /* }; */
    
   //ground line
   DrawLine(0,560,1080,560,BLACK);
@@ -255,7 +316,8 @@ void FinalLoop::Draw(double alpha){
   //DrawRectangleV(renderHitboxPos,hero.GetHitboxSize(),hero.GetH2Color());
 
   //render enemy pos
-  DrawTextureV(enemy.bodyTexture,enemy.position,enemy.GetColor());
+  //DrawTextureV(enemy.bodyTexture,enemy.position,enemy.GetColor());
+  DrawTextureRec(enemy.bodyTexture,enemy.frameRec,enemy.position,enemy.GetColor());
 }
 
 void FinalLoop::HandleCollision(){
@@ -267,7 +329,9 @@ void FinalLoop::HandleCollision(){
   
      ){
     
-    enemy.SetColor(YELLOW);
+    //enemy.SetColor(RED);
+    audioFMix->PlayHitSound();
+    enemy.currentState = HIT;
     enemy.hitsTaken += 1;
 
     
@@ -278,6 +342,7 @@ void FinalLoop::HandleCollision(){
       if(enemy.stunned){
 	enemy.SetX(50);
 	enemy.stunned = false;
+	enemy.currentState = STUN;
       }
       break;
     default:

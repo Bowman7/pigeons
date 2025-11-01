@@ -8,10 +8,11 @@
 #include"stdio.h"
 
 #include"Body.hpp"
+#include"audio.hpp"
 
 class FinalLoop{
 public:
-  FinalLoop();
+  FinalLoop(AudioMix* audioMix);
   ~FinalLoop();
   void Init();
   void deInit();
@@ -26,6 +27,15 @@ private:
   
   Body hero;
   Body enemy;
+  //background animation
+  Image backgroundImage;
+  Texture2D backgroundTexture;
+  Rectangle frameRec;
+  float textureWidth;
+  float textureHeight;
+  
+  int frameCounter = 0;
+  int currentFrame = 0;
 
   //for input state update
   struct Inputstate{
@@ -37,6 +47,9 @@ private:
     bool jumpPressed = false;
     
   }inputstate;
+  //audio
+  AudioMix* audioFMix;
+  
   
 };
 

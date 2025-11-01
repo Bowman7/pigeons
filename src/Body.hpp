@@ -15,6 +15,8 @@ typedef enum{
   CROSS,
   WALK_RIGHT,
   WALK_LEFT,
+  HIT,
+  STUN,
 }State;
 
 class Body{
@@ -148,7 +150,18 @@ public:
       textureHeight = bodyTexture.height;
     
       frameRec = {0.0f,0.0f,textureWidth/8,textureHeight/10};
-    }else{
+    }else if(id == 2){//enemy
+      ImageResizeNN(&bodyImage,600,600);
+      bodyTexture = LoadTextureFromImage(bodyImage);
+
+      textureWidth = bodyTexture.width;
+      textureHeight = bodyTexture.height;
+
+      frameRec = {0.0f,0.0f,textureWidth/3,textureHeight/3};
+
+      std::cout<<"successful init "<<textureWidth<<textureHeight<<std::endl;
+    }
+    else{
       ImageResizeNN(&bodyImage,200,200);
       bodyTexture = LoadTextureFromImage(bodyImage);
     }

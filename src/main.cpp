@@ -5,6 +5,7 @@
 #define SCREEN_HEIGHT 720
 
 #include"FinalLoop.hpp"
+#include"audio.hpp"
 #include<chrono>
 
 
@@ -18,9 +19,13 @@ int main(){
   
   InitWindow(SCREEN_WIDTH,SCREEN_HEIGHT,"pigeons");
 
+  //audio
+  AudioMix audioMix;
+  audioMix.Init();
+  
   SetTargetFPS(60);
 
-  FinalLoop finalLoop;
+  FinalLoop finalLoop(&audioMix);
 
   //init load textures
   finalLoop.Init();
@@ -52,7 +57,9 @@ int main(){
 
     //calculate interpolation factor
     double alpha = accumulator/dt;
-    
+
+    //update music
+    audioMix.Update();
     //update
     finalLoop.Update();
     //draw
@@ -65,6 +72,7 @@ int main(){
 
   }
   //de intialize
+  audioMix.DeInit();
   finalLoop.deInit();
   CloseWindow();
   
