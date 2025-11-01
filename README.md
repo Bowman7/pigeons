@@ -1,4 +1,4 @@
-# Pigeons
+# Pigeons v0.1
 Just a simple combat with a potential storyline but currently just working on the combat and little bit of graphics as well.
 
 
