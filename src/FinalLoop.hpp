@@ -2,7 +2,7 @@
 #define FINAL_LOOP_HPP
 
 #include<iostream>
-#include"../raylib/raylib.h"
+#include"raylib.h"
 #include<cmath>
 #include<algorithm>
 #include"stdio.h"

@@ -1,5 +1,12 @@
 #include"FinalLoop.hpp"
 
+#if defined (__GNUC__) || defined (__clang__)
+template<typename T>
+constexpr T clamp(T val, T minVal, T maxVal) {
+    return (val < minVal) ? minVal : (val > maxVal) ? maxVal : val;
+}
+#endif
+
 FinalLoop::FinalLoop(AudioMix* audioMix)
   :hero(WHITE,RIGHT),enemy(WHITE,LEFT)
 {
@@ -13,7 +20,7 @@ FinalLoop::~FinalLoop(){
 
 void FinalLoop::Init(){
   //load background
-  backgroundImage = LoadImage("asset/bakground2-animapng.png");
+  backgroundImage = LoadImage("./asset/bakground2-animapng.png");
   backgroundTexture = LoadTextureFromImage(backgroundImage);
 
   textureWidth = backgroundTexture.width;
@@ -21,8 +28,9 @@ void FinalLoop::Init(){
 
   frameRec = {0.0f,0.0f,textureWidth,textureHeight/19};
   
-  const char* heroImgSrc= "asset/hero-shee.png";
-  const char* enemyImgSrc = "asset/dummy-shee.png";
+  const char* heroImgSrc= "./asset/hero-shee.png";
+  const char* enemyImgSrc = "./asset/dummy-shee.png";
+
 
   hero.Init(heroImgSrc,1);
   enemy.Init(enemyImgSrc,2);
@@ -153,9 +161,15 @@ void FinalLoop::UpdatePhysics(double dt){
   hero.hitbox1_position.y = hero.position.y;
   hero.hitbox2_position.y = hero.position.y;
 
+#if defined (__GNUC__) || defined (__clang__)
+  hero.velocity.x = clamp(hero.velocity.x,-400.0f,400.0f);
+  hero.velocity.y = clamp(hero.velocity.y,-700.0f,700.0f);
+#else
+
   //speed caps
   hero.velocity.x = std::clamp(hero.velocity.x,-400.0f,400.0f);
   hero.velocity.y = std::clamp(hero.velocity.y,-700.0f,700.0f);
+#endif
 
   
 

@@ -10,14 +10,14 @@ public:
     
     InitAudioDevice();
 
-    backgroundMusic = LoadMusicStream("asset/background-music.mp3");
+    backgroundMusic = LoadMusicStream("./asset/background-music.mp3");
     backgroundMusic.looping = true;
     SetMusicVolume(backgroundMusic,0.8);
 
-    s_hit = LoadSound("asset/hit.mp3");
+    s_hit = LoadSound("./asset/hit.mp3");
     SetSoundVolume(s_hit,6.0);
 
-    hit_air = LoadSound("asset/punch-air.mp3");
+    hit_air = LoadSound("./asset/punch-air.mp3");
     SetSoundVolume(hit_air,0.3);
     
     PlayMusicStream(backgroundMusic);
